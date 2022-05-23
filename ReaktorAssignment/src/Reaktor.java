@@ -4,19 +4,43 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Map.Entry;
 
 public class Reaktor {
 
     private static final String sourceFilename = "poetry.lock";
     private static final String targetFilename = "output.html";
 
+    private static String myTrim(String stringToTrim, char startSymbol, char endSymbol) {
+        // returns trimmed string if symbols can be trimmed, otherwise returns same
+        // string;
+        if (stringToTrim.charAt(0) == startSymbol && stringToTrim.charAt(stringToTrim.length() - 1) == endSymbol) {
+            stringToTrim = stringToTrim.substring(1, stringToTrim.length() - 1);
+        }
+        return stringToTrim;
+
+    }
+
+    private static Map.Entry<String, String> mySplit(String stringToSplit) {
+        // Divides String into two Strings - key and value. Divided around " = "
+        // Removes quotemarks from value, if any
+        int position = stringToSplit.indexOf(" = ");
+        String keyPart = stringToSplit.substring(0, position);
+        String valuePart = stringToSplit.substring(position + 3, stringToSplit.length());
+        valuePart = myTrim(valuePart, '\"', '\"');
+        return Map.entry(keyPart, valuePart);
+
+    }
+
     public static void main(String[] args) {
 
-        ArrayList<String> poetry = new ArrayList<>();
+        List<String> poetry = new ArrayList<>();
         Map<String, Package> installedPackages = new HashMap<>();
 
         // Reading file into array
@@ -37,11 +61,11 @@ public class Reaktor {
         parsePackages(poetry, installedPackages);
 
         // At the moment all info is has been read.
-        // Next step: generate the reverse dependancies.
+        // Next step: generate the reverse dependencies.
 
         generateRevDependencies(installedPackages);
 
-        // Structure has been built (including reverse dependancies).
+        // Structure has been built (including reverse dependencies).
 
         exportToHtml(installedPackages);
 
@@ -57,7 +81,7 @@ public class Reaktor {
 
     private static void exportToHtml(Map<String, Package> installedPackages) {
         // Creating array of sorted names and writing to html
-        ArrayList<String> keyArray = new ArrayList<>();
+        List<String> keyArray = new ArrayList<>();
         for (Map.Entry<String, Package> m : installedPackages.entrySet()) {
             keyArray.add(m.getKey());
         }
@@ -100,7 +124,7 @@ public class Reaktor {
                 // Dependencies
                 myOutput = "";
 
-                ArrayList<String> depArray = new ArrayList<>();
+                List<String> depArray = new ArrayList<>();
                 for (String dependency : installedPackages.get(packName).getDependencies()) {
                     depArray.add(dependency);
                 }
@@ -112,7 +136,7 @@ public class Reaktor {
                     if (keyArray.contains(depName)) {
                         myOutput = myOutput + "<a href=\"#" + depName + "\">" + depName + "</a>, ";
                     } else {
-                        myOutput = myOutput + depName + "</a>, ";
+                        myOutput = myOutput + depName + ", ";
                     }
                 }
                 if (myOutput.isEmpty()) {
@@ -125,7 +149,7 @@ public class Reaktor {
                 // Reversed Dependencies
                 myOutput = "";
 
-                ArrayList<String> revDepArray = new ArrayList<>();
+                List<String> revDepArray = new ArrayList<>();
                 for (String dependency : installedPackages.get(packName).getReversedDependencies()) {
                     revDepArray.add(dependency);
                 }
@@ -136,7 +160,7 @@ public class Reaktor {
                     if (keyArray.contains(depName)) {
                         myOutput = myOutput + "<a href=\"#" + depName + "\">" + depName + "</a>, ";
                     } else {
-                        myOutput = myOutput + depName + "</a>, ";
+                        myOutput = myOutput + depName + ", ";
                     }
                 }
                 if (myOutput.isEmpty()) {
@@ -162,15 +186,15 @@ public class Reaktor {
 
     private static void generateRevDependencies(Map<String, Package> installedPackages) {
         for (Map.Entry<String, Package> m : installedPackages.entrySet()) {
-            for (String dependancy : m.getValue().getDependencies()) {
-                if (installedPackages.containsKey(dependancy)) {
-                    installedPackages.get(dependancy).addReversedDependancy(m.getKey());
+            for (String dependency : m.getValue().getDependencies()) {
+                if (installedPackages.containsKey(dependency)) {
+                    installedPackages.get(dependency).addReversedDependency(m.getKey());
                 }
             }
         }
     }
 
-    private static void parsePackages(ArrayList<String> poetry, Map<String, Package> installedPackages) {
+    private static void parsePackages(List<String> poetry, Map<String, Package> installedPackages) {
         int counter = 0;
         int poetrySize = poetry.size();
 
@@ -183,7 +207,9 @@ public class Reaktor {
 
                 while (!poetry.get(counter).isEmpty()) {
                     // reading package body
-                    TwoStrings newPackLine = new TwoStrings(poetry.get(counter));
+                    Map.Entry<String, String> newPackLine = mySplit(poetry.get(counter));
+
+                    // TwoStrings newPackLine = new TwoStrings(poetry.get(counter));
                     String lineKey = newPackLine.getKey();
                     String lineValue = newPackLine.getValue();
                     if (lineKey.equals("name")) {
@@ -206,17 +232,18 @@ public class Reaktor {
                 if (poetry.get(counter + 1).equals("[package.dependencies]")) {
                     counter = counter + 2;
                     while (!poetry.get(counter).isEmpty()) {
-                        // reading package dependancies
+                        // reading package dependencies
                         // considering only left part of "=" sign.
-                        TwoStrings newPackLine = new TwoStrings(poetry.get(counter));
+                        Map.Entry<String, String> newPackLine = mySplit(poetry.get(counter));
+                        // TwoStrings newPackLine = new TwoStrings(poetry.get(counter));
                         String lineKey = newPackLine.getKey();
-                        newPackage.addDependancy(lineKey);
+                        newPackage.addDependency(lineKey);
                         counter++;
                     }
 
                 }
 
-                // Package dependancies (if existed) has been read;
+                // Package dependencies (if existed) has been read;
                 // Counter shows the empty string;
                 // Checking for package extras if any;
 
@@ -225,12 +252,11 @@ public class Reaktor {
                     // reading package extras
                     // considering only right part of "=" sign.
                     while (!poetry.get(counter).isEmpty()) {
-                        TwoStrings newPackLine = new TwoStrings(poetry.get(counter));
+                        // TwoStrings newPackLine = new TwoStrings(poetry.get(counter));
+                        Map.Entry<String, String> newPackLine = mySplit(poetry.get(counter));
                         String lineValue = newPackLine.getValue();
                         // removing "[]" from line:
-                        if (lineValue.charAt(0) == '[' && lineValue.charAt(lineValue.length() - 1) == ']') {
-                            lineValue = lineValue.substring(1, lineValue.length() - 1);
-                        }
+                        lineValue = myTrim(lineValue, '[', ']');
                         // Splitting string
                         String[] lineValueSplited = lineValue.split(", ");
                         // removing versions, etc. Only first word remains. :
@@ -242,7 +268,7 @@ public class Reaktor {
                                 lineValueSplited[i] = lineValueSplited[i].substring(1,
                                         lineValueSplited[i].length() - 1);
                             }
-                            newPackage.addDependancy(lineValueSplited[i]);
+                            newPackage.addDependency(lineValueSplited[i]);
                         }
 
                         counter++;

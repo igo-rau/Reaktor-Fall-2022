@@ -35,12 +35,12 @@ public class Package {
         this.dependencies = dependencies;
     }
 
-    public void addDependancy(String dependancy) {
-        this.dependencies.add(dependancy);
+    public void addDependency(String dependency) {
+        this.dependencies.add(dependency);
     }
 
-    public void addReversedDependancy(String dependancy) {
-        this.reversedDependencies.add(dependancy);
+    public void addReversedDependency(String dependency) {
+        this.reversedDependencies.add(dependency);
     }
 
     public boolean isOptional() {
