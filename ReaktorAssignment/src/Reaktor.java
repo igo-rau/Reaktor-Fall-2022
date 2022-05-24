@@ -4,13 +4,11 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Map.Entry;
 
 public class Reaktor {
 
@@ -123,20 +121,12 @@ public class Reaktor {
 
                 // Dependencies
                 myOutput = "";
-
-                List<String> depArray = new ArrayList<>();
-                for (String dependency : installedPackages.get(packName).getDependencies()) {
-                    depArray.add(dependency);
-                }
-
-                Collections.sort(depArray);
-
                 myWriter.write("<h3>Dependencies</h3>\n");
-                for (String depName : depArray) {
-                    if (keyArray.contains(depName)) {
-                        myOutput = myOutput + "<a href=\"#" + depName + "\">" + depName + "</a>, ";
+                for (String dependency : installedPackages.get(packName).getDependencies()) {
+                    if (installedPackages.containsKey(dependency)) {
+                        myOutput = myOutput + "<a href=\"#" + dependency + "\">" + dependency + "</a>, ";
                     } else {
-                        myOutput = myOutput + depName + ", ";
+                        myOutput = myOutput + dependency + ", ";                        
                     }
                 }
                 if (myOutput.isEmpty()) {
@@ -146,30 +136,23 @@ public class Reaktor {
                 }
                 myWriter.write(myOutput);
 
+
                 // Reversed Dependencies
                 myOutput = "";
-
-                List<String> revDepArray = new ArrayList<>();
-                for (String dependency : installedPackages.get(packName).getReversedDependencies()) {
-                    revDepArray.add(dependency);
-                }
-                Collections.sort(revDepArray);
-
                 myWriter.write("<h3>Reversed dependencies</h3>\n");
-                for (String depName : revDepArray) {
-                    if (keyArray.contains(depName)) {
-                        myOutput = myOutput + "<a href=\"#" + depName + "\">" + depName + "</a>, ";
+                for (String dependency : installedPackages.get(packName).getReversedDependencies()) {
+                    if (installedPackages.containsKey(dependency)) {
+                        myOutput = myOutput + "<a href=\"#" + dependency + "\">" + dependency + "</a>, ";
                     } else {
-                        myOutput = myOutput + depName + ", ";
+                        myOutput = myOutput + dependency + ", ";                        
                     }
-                }
+                }                
                 if (myOutput.isEmpty()) {
                     myOutput = "No reversed dependencies";
                 } else {
                     myOutput = myOutput.substring(0, myOutput.length() - 2) + ".";
                 }
                 myWriter.write(myOutput);
-
                 myWriter.write("<br>\n<hr>\n</div>\n");
 
             }

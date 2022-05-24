@@ -1,18 +1,19 @@
-import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class Package {
 
     private String name;
     private String description;
     private boolean isOptional;
-    private Set<String> dependencies;
-    private Set<String> reversedDependencies;
+    private SortedSet<String> dependencies;
+    private SortedSet<String> reversedDependencies;
     
 
     public Package() {
-        this.dependencies = new HashSet<>();
-        this.reversedDependencies = new HashSet<>();
+        this.dependencies = new TreeSet<String>();
+        this.reversedDependencies = new TreeSet<String>();
     }
 
     public String getName() {
@@ -23,7 +24,7 @@ public class Package {
         return reversedDependencies;
     }
 
-    public void setReversedDependencies(Set<String> reversedDependencies) {
+    public void setReversedDependencies(SortedSet<String> reversedDependencies) {
         this.reversedDependencies = reversedDependencies;
     }
 
@@ -31,7 +32,7 @@ public class Package {
         return dependencies;
     }
 
-    public void setDependencies(Set<String> dependencies) {
+    public void setDependencies(SortedSet<String> dependencies) {
         this.dependencies = dependencies;
     }
 
