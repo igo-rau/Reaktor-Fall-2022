@@ -4,8 +4,6 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -16,6 +14,10 @@ public class Reaktor {
 
     private static final String sourceFilename = "poetry.lock";
     private static final String targetFilename = "output.html";
+
+    private static String wrapWithAHref(String s) {
+        return "<a href=\"#" + s + "\">" + s + "</a>";
+    }
 
     private static String myTrim(String stringToTrim, char startSymbol, char endSymbol) {
         // returns trimmed string if symbols can be trimmed, otherwise returns same
@@ -30,13 +32,13 @@ public class Reaktor {
     private static Map.Entry<String, String> mySplit(String stringToSplit) {
         // Divides String into two Strings - key and value. Divided around " = "
         // Removes quotemarks from value, if any
-        int position = stringToSplit.indexOf(" = ");
-        String keyPart = stringToSplit.substring(0, position);
-        String valuePart = stringToSplit.substring(position + 3, stringToSplit.length());
-        valuePart = myTrim(valuePart, '\"', '\"');
-        return Map.entry(keyPart, valuePart);
+        String[] splittedString = stringToSplit.split(" = ");
+        splittedString[1] = myTrim(splittedString[1], '\"', '\"');
+        return Map.entry(splittedString[0], splittedString[1]);
 
     }
+
+
 
     public static void main(String[] args) {
 
@@ -80,14 +82,6 @@ public class Reaktor {
     }
 
     private static void exportToHtml(Map<String, Package> installedPackages) {
-/*        
-        // Creating array of sorted names and writing to html
-        List<String> keyArray = new ArrayList<>();
-        for (Map.Entry<String, Package> m : installedPackages.entrySet()) {
-            keyArray.add(m.getKey());
-        }
-        Collections.sort(keyArray);
-    */
 
         // Writing to html:
         try {
@@ -97,23 +91,17 @@ public class Reaktor {
             myWriter.write(
                     "<h1>Reaktor developer's <a href=\"https://www.reaktor.com/assignment-fall-2022-developers/\">assignment</a> - fall 2022</h1>\n");
             myWriter.write("Developed by: Igor Rautiainen <br>\n");
-            Date date = new Date();
-            myWriter.write("Generated: " + new Timestamp(date.getTime()) + "<br>\n");
+            myWriter.write("Generated: " + new Timestamp(new Date().getTime()) + "<br>\n");
             myWriter.write("<hr>");
 
             // Div with index
             myWriter.write("<div id=\"top\">");
             myWriter.write("<h2>Installed packages</h2><br>\n");
             for (String packName : installedPackages.keySet()) {
-                myWriter.write("<a href=\"#" + packName + "\">" + packName + "</a>" + ", ");
+                myWriter.write(wrapWithAHref(packName) + ", ");
             }
-            // for (int i = 0; i < keyArray.size(); i++) {
-            //     if (i == keyArray.size() - 1) {
-            //         myWriter.write(".");
-            //     } else {
-            //         myWriter.write(", ");
-                // }
-            // }
+            //TODO: Fullstop instead of comma at the end.
+
             myWriter.write("<br>\n<hr>\n</div>\n");
 
             // Div for each package
@@ -130,7 +118,7 @@ public class Reaktor {
                 myWriter.write("<h3>Dependencies</h3>\n");
                 for (String dependency : installedPackages.get(packName).getDependencies()) {
                     if (installedPackages.containsKey(dependency)) {
-                        myOutput = myOutput + "<a href=\"#" + dependency + "\">" + dependency + "</a>, ";
+                        myOutput = myOutput + wrapWithAHref(dependency)+"</a>, ";
                     } else {
                         myOutput = myOutput + dependency + ", ";                        
                     }
@@ -148,7 +136,7 @@ public class Reaktor {
                 myWriter.write("<h3>Reversed dependencies</h3>\n");
                 for (String dependency : installedPackages.get(packName).getReversedDependencies()) {
                     if (installedPackages.containsKey(dependency)) {
-                        myOutput = myOutput + "<a href=\"#" + dependency + "\">" + dependency + "</a>, ";
+                        myOutput = myOutput + wrapWithAHref(dependency) + "</a>, ";
                     } else {
                         myOutput = myOutput + dependency + ", ";                        
                     }
