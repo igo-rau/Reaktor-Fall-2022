@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class Reaktor {
 
@@ -39,7 +41,7 @@ public class Reaktor {
     public static void main(String[] args) {
 
         List<String> poetry = new ArrayList<>();
-        Map<String, Package> installedPackages = new HashMap<>();
+        SortedMap<String, Package> installedPackages = new TreeMap<>();
 
         // Reading file into array
 
@@ -78,12 +80,14 @@ public class Reaktor {
     }
 
     private static void exportToHtml(Map<String, Package> installedPackages) {
+/*        
         // Creating array of sorted names and writing to html
         List<String> keyArray = new ArrayList<>();
         for (Map.Entry<String, Package> m : installedPackages.entrySet()) {
             keyArray.add(m.getKey());
         }
         Collections.sort(keyArray);
+    */
 
         // Writing to html:
         try {
@@ -100,18 +104,20 @@ public class Reaktor {
             // Div with index
             myWriter.write("<div id=\"top\">");
             myWriter.write("<h2>Installed packages</h2><br>\n");
-            for (int i = 0; i < keyArray.size(); i++) {
-                myWriter.write("<a href=\"#" + keyArray.get(i) + "\">" + keyArray.get(i) + "</a>");
-                if (i == keyArray.size() - 1) {
-                    myWriter.write(".");
-                } else {
-                    myWriter.write(", ");
-                }
+            for (String packName : installedPackages.keySet()) {
+                myWriter.write("<a href=\"#" + packName + "\">" + packName + "</a>" + ", ");
             }
+            // for (int i = 0; i < keyArray.size(); i++) {
+            //     if (i == keyArray.size() - 1) {
+            //         myWriter.write(".");
+            //     } else {
+            //         myWriter.write(", ");
+                // }
+            // }
             myWriter.write("<br>\n<hr>\n</div>\n");
 
             // Div for each package
-            for (String packName : keyArray) {
+            for (String packName : installedPackages.keySet()) {
                 myWriter.write("<div id=\"" + packName + "\">");
                 myWriter.write("<h3 style=display:inline>" + packName + "</h3>" + " (to the "
                         + "<a href=\"#top\">TOP</a>" + ")<br>\n");
