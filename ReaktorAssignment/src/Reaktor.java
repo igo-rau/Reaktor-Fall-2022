@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.SortedMap;
-import java.util.TreeMap;
+
+
 
 public class Reaktor {
 
@@ -43,7 +43,7 @@ public class Reaktor {
     public static void main(String[] args) {
 
         List<String> poetry = new ArrayList<>();
-        SortedMap<String, Package> installedPackages = new TreeMap<>();
+        Packages installedPackages = new Packages();
 
         // Reading file into array
 
@@ -81,7 +81,7 @@ public class Reaktor {
 
     }
 
-    private static void exportToHtml(Map<String, Package> installedPackages) {
+    private static void exportToHtml(Packages installedPackages) {
 
         // Writing to html:
         try {
@@ -97,7 +97,7 @@ public class Reaktor {
             // Div with index
             myWriter.write("<div id=\"top\">");
             myWriter.write("<h2>Installed packages</h2><br>\n");
-            for (String packName : installedPackages.keySet()) {
+            for (String packName : installedPackages.getKeySet()) {
                 myWriter.write(wrapWithAHref(packName) + ", ");
             }
             //TODO: Fullstop instead of comma at the end.
@@ -105,20 +105,20 @@ public class Reaktor {
             myWriter.write("<br>\n<hr>\n</div>\n");
 
             // Div for each package
-            for (String packName : installedPackages.keySet()) {
+            for (String packName : installedPackages.getKeySet()) {
                 myWriter.write("<div id=\"" + packName + "\">");
                 myWriter.write("<h3 style=display:inline>" + packName + "</h3>" + " (to the "
                         + "<a href=\"#top\">TOP</a>" + ")<br>\n");
-                myWriter.write(installedPackages.get(packName).getDescription() + "<br>\n");
+                myWriter.write(installedPackages.getPack(packName).getDescription() + "<br>\n");
 
                 String myOutput;
 
                 // Dependencies
                 myOutput = "";
                 myWriter.write("<h3>Dependencies</h3>\n");
-                for (String dependency : installedPackages.get(packName).getDependencies()) {
-                    if (installedPackages.containsKey(dependency)) {
-                        myOutput = myOutput + wrapWithAHref(dependency)+"</a>, ";
+                for (String dependency : installedPackages.getPack(packName).getDependencies()) {
+                    if (installedPackages.containsPack(dependency)) {
+                        myOutput = myOutput + wrapWithAHref(dependency)+", ";
                     } else {
                         myOutput = myOutput + dependency + ", ";                        
                     }
@@ -134,9 +134,9 @@ public class Reaktor {
                 // Reversed Dependencies
                 myOutput = "";
                 myWriter.write("<h3>Reversed dependencies</h3>\n");
-                for (String dependency : installedPackages.get(packName).getReversedDependencies()) {
-                    if (installedPackages.containsKey(dependency)) {
-                        myOutput = myOutput + wrapWithAHref(dependency) + "</a>, ";
+                for (String dependency : installedPackages.getPack(packName).getReversedDependencies()) {
+                    if (installedPackages.containsPack(dependency)) {
+                        myOutput = myOutput + wrapWithAHref(dependency) + ", ";
                     } else {
                         myOutput = myOutput + dependency + ", ";                        
                     }
@@ -161,17 +161,17 @@ public class Reaktor {
         }
     }
 
-    private static void generateRevDependencies(Map<String, Package> installedPackages) {
-        for (Map.Entry<String, Package> m : installedPackages.entrySet()) {
+    private static void generateRevDependencies(Packages installedPackages) {
+        for (Map.Entry<String, Package> m : installedPackages.getEntrySet()) {
             for (String dependency : m.getValue().getDependencies()) {
-                if (installedPackages.containsKey(dependency)) {
-                    installedPackages.get(dependency).addReversedDependency(m.getKey());
+                if (installedPackages.containsPack(dependency)) {
+                    installedPackages.getPack(dependency).addReversedDependency(m.getKey());
                 }
             }
         }
     }
 
-    private static void parsePackages(List<String> poetry, Map<String, Package> installedPackages) {
+    private static void parsePackages(List<String> poetry, Packages installedPackages) {
         int counter = 0;
         int poetrySize = poetry.size();
 
@@ -254,7 +254,7 @@ public class Reaktor {
 
                 }
 
-                installedPackages.put(newPackage.getName(), newPackage);
+                installedPackages.addPackage(newPackage.getName(), newPackage);
 
                 // System.out.println(newPackage);
 
