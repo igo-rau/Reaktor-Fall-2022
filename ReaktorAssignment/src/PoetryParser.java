@@ -1,4 +1,5 @@
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 public class PoetryParser {
@@ -24,6 +25,11 @@ public class PoetryParser {
                 currentLine = poetryScanner.nextLine();                 
             }
         }
+        // At the moment all info is has been read.
+        // Next step: generate the reverse dependencies.
+
+        generateRevDependencies(packages);
+        // Structure has been built (including reverse dependencies).        
     }
 
     private String readPackageBodyAndReturnNextLine(Package newPackage) {
@@ -88,6 +94,16 @@ public class PoetryParser {
 
         return currentLine;
 
+    }
+
+    private static void generateRevDependencies(Packages installedPackages) {
+        for (Map.Entry<String, Package> m : installedPackages.getEntrySet()) {
+            for (String dependency : m.getValue().getDependencies()) {
+                if (installedPackages.containsPack(dependency)) {
+                    installedPackages.getPack(dependency).addReversedDependency(m.getKey());
+                }
+            }
+        }
     }
 
     private static Map.Entry<String, String> mySplit(String stringToSplit) {

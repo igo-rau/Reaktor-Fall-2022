@@ -3,7 +3,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.sql.Timestamp;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Reaktor {
@@ -30,13 +29,6 @@ public class Reaktor {
         } catch (Exception e) {
             System.out.println("Error opening file: " + e.getMessage());
         }
-
-        // At the moment all info is has been read.
-        // Next step: generate the reverse dependencies.
-
-        generateRevDependencies(installedPackages);
-
-        // Structure has been built (including reverse dependencies).
 
         exportToHtml(installedPackages);
 
@@ -119,16 +111,6 @@ public class Reaktor {
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
-        }
-    }
-
-    private static void generateRevDependencies(Packages installedPackages) {
-        for (Map.Entry<String, Package> m : installedPackages.getEntrySet()) {
-            for (String dependency : m.getValue().getDependencies()) {
-                if (installedPackages.containsPack(dependency)) {
-                    installedPackages.getPack(dependency).addReversedDependency(m.getKey());
-                }
-            }
         }
     }
 
