@@ -1,5 +1,4 @@
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 
 public class PoetryParser {
@@ -27,7 +26,6 @@ public class PoetryParser {
         }
         // At the moment all info is has been read.
         // Next step: generate the reverse dependencies.
-
         generateRevDependencies(packages);
         // Structure has been built (including reverse dependencies).        
     }
@@ -35,32 +33,18 @@ public class PoetryParser {
     private String readPackageBodyAndReturnNextLine(Package newPackage) {
         String currentLine = poetryScanner.nextLine();
         while (!currentLine.isEmpty()) {
-            //TODO: Refactor;
-            Map.Entry<String, String> newPackLine = mySplit(currentLine);
-            String lineKey = newPackLine.getKey();
-            String lineValue = newPackLine.getValue();
-            if (lineKey.equals("name")) {
-                newPackage.setName(lineValue);
-            }
-            if (lineKey.equals("description")) {
-                newPackage.setDescription(lineValue);
-            }
-            if (lineKey.equals("optional")) {
-                newPackage.setOptional(Boolean.valueOf(lineValue));
-            }
+            parseBodyLine(newPackage, currentLine);
             currentLine = poetryScanner.nextLine();
         }
         // pointing at empty line after package body;
 
         currentLine = poetryScanner.nextLine();
-
         if (currentLine.equals("[package.dependencies]")) {
             currentLine = poetryScanner.nextLine();
             while (!currentLine.isEmpty()) {
                 // reading package dependencies
                 // considering only left part of "=" sign.
-                Map.Entry<String, String> newPackLine = mySplit(currentLine);
-                newPackage.addDependency(newPackLine.getKey());
+                parseDependencyLine(newPackage, currentLine);
                 currentLine = poetryScanner.nextLine();
             }
             currentLine = poetryScanner.nextLine();
@@ -68,25 +52,8 @@ public class PoetryParser {
 
         if (currentLine.equals("[package.extras]")) {
             currentLine = poetryScanner.nextLine();
-
             while (!currentLine.isEmpty()) {
-                Map.Entry<String, String> newPackLine = mySplit(currentLine);
-                String lineValue = newPackLine.getValue();
-                // removing "[]" from line:
-                lineValue = myTrim(lineValue, '[', ']');
-                // Splitting string
-                String[] lineValueSplited = lineValue.split(", ");
-                // removing versions, etc. Only first word remains. :
-                for (int i = 0; i < lineValueSplited.length; i++) {
-                    if (lineValueSplited[i].contains(" ")) {
-                        lineValueSplited[i] = lineValueSplited[i].substring(1,
-                                lineValueSplited[i].indexOf(" "));
-                    } else {
-                        lineValueSplited[i] = lineValueSplited[i].substring(1,
-                                lineValueSplited[i].length() - 1);
-                    }
-                    newPackage.addDependency(lineValueSplited[i]);
-                }
+                parseExtrasLine(newPackage, currentLine);
                 currentLine = poetryScanner.nextLine();
             }
             currentLine = poetryScanner.nextLine();
@@ -94,6 +61,33 @@ public class PoetryParser {
 
         return currentLine;
 
+    }
+
+    private void parseExtrasLine(Package newPackage, String currentLine) {
+        // Using only right part of " ". removing "[]" from line. Splitting string. Splitting into parts.
+        String[] lineValueSplited = myTrim(mySplit(currentLine)[1], '[', ']').split(", ");
+        for (String s : lineValueSplited) {
+            // Trimming quotes. Only first word remains. 
+            newPackage.addDependency(myTrim(s, '\"', '\"').split(" ")[0]);
+        }
+    }
+
+    private void parseDependencyLine(Package newPackage, String currentLine) {
+        String[] newPackLine = mySplit(currentLine);
+        newPackage.addDependency(newPackLine[0]);
+    }
+
+    private void parseBodyLine(Package newPackage, String currentLine) {
+        String[] newPackLine = mySplit(currentLine);
+        if (newPackLine[0].equals("name")) {
+            newPackage.setName(newPackLine[1]);
+        }
+        if (newPackLine[0].equals("description")) {
+            newPackage.setDescription(newPackLine[1]);
+        }
+        if (newPackLine[0].equals("optional")) {
+            newPackage.setOptional(Boolean.valueOf(newPackLine[1]));
+        }
     }
 
     private static void generateRevDependencies(Packages installedPackages) {
@@ -106,12 +100,12 @@ public class PoetryParser {
         }
     }
 
-    private static Map.Entry<String, String> mySplit(String stringToSplit) {
+    private static String[] mySplit(String stringToSplit) {
         // Divides String into two Strings - key and value. Divided around " = "
         // Removes quotemarks from value, if any
         String[] splittedString = stringToSplit.split(" = ");
         splittedString[1] = myTrim(splittedString[1], '\"', '\"');
-        return Map.entry(splittedString[0], splittedString[1]);
+        return splittedString;
 
     }
 
