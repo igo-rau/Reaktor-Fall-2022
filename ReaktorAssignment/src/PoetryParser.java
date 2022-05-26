@@ -13,21 +13,18 @@ public class PoetryParser {
     public void run() {
         String currentLine = "";
         if (poetryScanner.hasNextLine()) {
-            currentLine = poetryScanner.nextLine(); 
-        } 
+            currentLine = poetryScanner.nextLine();
+        }
         while (this.poetryScanner.hasNextLine()) {
             if (currentLine.equals("[[package]]")) {
                 Package newPackage = new Package();
                 currentLine = readPackageBodyAndReturnNextLine(newPackage);
                 packages.addPackage(newPackage.getName(), newPackage);
             } else {
-                currentLine = poetryScanner.nextLine();                 
+                currentLine = poetryScanner.nextLine();
             }
         }
-        // At the moment all info is has been read.
-        // Next step: generate the reverse dependencies.
         generateRevDependencies(packages);
-        // Structure has been built (including reverse dependencies).        
     }
 
     private String readPackageBodyAndReturnNextLine(Package newPackage) {
@@ -39,11 +36,12 @@ public class PoetryParser {
         // pointing at empty line after package body;
 
         currentLine = poetryScanner.nextLine();
+
         if (currentLine.equals("[package.dependencies]")) {
             currentLine = poetryScanner.nextLine();
             while (!currentLine.isEmpty()) {
                 // reading package dependencies
-                // considering only left part of "=" sign.
+                // considering only left part of " = ".
                 parseDependencyLine(newPackage, currentLine);
                 currentLine = poetryScanner.nextLine();
             }
@@ -57,17 +55,18 @@ public class PoetryParser {
                 currentLine = poetryScanner.nextLine();
             }
             currentLine = poetryScanner.nextLine();
-        }        
+        }
 
         return currentLine;
 
     }
 
     private void parseExtrasLine(Package newPackage, String currentLine) {
-        // Using only right part of " ". removing "[]" from line. Splitting string. Splitting into parts.
+        // Using only right part of " = ". removing "[]" from line. Splitting string
+        // into parts.
         String[] lineValueSplited = myTrim(mySplit(currentLine)[1], '[', ']').split(", ");
         for (String s : lineValueSplited) {
-            // Trimming quotes. Only first word remains. 
+            // Trimming quotes. Only first word remains.
             newPackage.addDependency(myTrim(s, '\"', '\"').split(" ")[0]);
         }
     }
