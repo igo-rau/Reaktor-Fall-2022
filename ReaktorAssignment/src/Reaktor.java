@@ -3,12 +3,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
-
 
 public class Reaktor {
 
@@ -19,48 +15,21 @@ public class Reaktor {
         return "<a href=\"#" + s + "\">" + s + "</a>";
     }
 
-    private static String myTrim(String stringToTrim, char startSymbol, char endSymbol) {
-        // returns trimmed string if symbols can be trimmed, otherwise returns same
-        // string;
-        if (stringToTrim.charAt(0) == startSymbol && stringToTrim.charAt(stringToTrim.length() - 1) == endSymbol) {
-            stringToTrim = stringToTrim.substring(1, stringToTrim.length() - 1);
-        }
-        return stringToTrim;
-
-    }
-
-    private static Map.Entry<String, String> mySplit(String stringToSplit) {
-        // Divides String into two Strings - key and value. Divided around " = "
-        // Removes quotemarks from value, if any
-        String[] splittedString = stringToSplit.split(" = ");
-        splittedString[1] = myTrim(splittedString[1], '\"', '\"');
-        return Map.entry(splittedString[0], splittedString[1]);
-
-    }
-
-
-
     public static void main(String[] args) {
 
-        List<String> poetry = new ArrayList<>();
         Packages installedPackages = new Packages();
 
-        // Reading file into array
+        // Parsing
 
         System.out.println("Reading from " + sourceFilename + "...");
         try {
             Scanner fileScanner = new Scanner(Paths.get(sourceFilename));
-            while (fileScanner.hasNextLine()) {
-                poetry.add(fileScanner.nextLine());
-            }
-            System.out.println("Reading complete!");
+            PoetryParser poetryParser = new PoetryParser(fileScanner, installedPackages);
+            poetryParser.run();
+            System.out.println("Parsing complete!");
         } catch (Exception e) {
             System.out.println("Error opening file: " + e.getMessage());
         }
-
-        // Parsing Packages;
-
-        parsePackages(poetry, installedPackages);
 
         // At the moment all info is has been read.
         // Next step: generate the reverse dependencies.
@@ -70,14 +39,6 @@ public class Reaktor {
         // Structure has been built (including reverse dependencies).
 
         exportToHtml(installedPackages);
-
-        // test pring of the whole list
-        // for (Map.Entry<String, Package> m : installedPackages.entrySet()) {
-        // System.out.println();
-        // System.out.println("Printing map element: " + m.getKey());
-        // m.getValue().printFullPackageInfo();
-        // System.out.println("========================");
-        // }
 
     }
 
@@ -168,103 +129,6 @@ public class Reaktor {
                     installedPackages.getPack(dependency).addReversedDependency(m.getKey());
                 }
             }
-        }
-    }
-
-    private static void parsePackages(List<String> poetry, Packages installedPackages) {
-        int counter = 0;
-        int poetrySize = poetry.size();
-
-        while (counter <= poetrySize - 1) {
-
-            // Reading package body
-            if (poetry.get(counter).equals("[[package]]")) {
-                counter++;
-                Package newPackage = new Package();
-
-                while (!poetry.get(counter).isEmpty()) {
-                    // reading package body
-                    Map.Entry<String, String> newPackLine = mySplit(poetry.get(counter));
-
-                    // TwoStrings newPackLine = new TwoStrings(poetry.get(counter));
-                    String lineKey = newPackLine.getKey();
-                    String lineValue = newPackLine.getValue();
-                    if (lineKey.equals("name")) {
-                        newPackage.setName(lineValue);
-                    }
-
-                    if (lineKey.equals("description")) {
-                        newPackage.setDescription(lineValue);
-                    }
-
-                    if (lineKey.equals("optional")) {
-                        newPackage.setOptional(Boolean.valueOf(lineValue));
-                    }
-
-                    counter++;
-                }
-                // Package body has been read; Counter points the empty string after packege;
-                // Checking for package dependencies if any:
-
-                if (poetry.get(counter + 1).equals("[package.dependencies]")) {
-                    counter = counter + 2;
-                    while (!poetry.get(counter).isEmpty()) {
-                        // reading package dependencies
-                        // considering only left part of "=" sign.
-                        Map.Entry<String, String> newPackLine = mySplit(poetry.get(counter));
-                        // TwoStrings newPackLine = new TwoStrings(poetry.get(counter));
-                        String lineKey = newPackLine.getKey();
-                        newPackage.addDependency(lineKey);
-                        counter++;
-                    }
-
-                }
-
-                // Package dependencies (if existed) has been read;
-                // Counter shows the empty string;
-                // Checking for package extras if any;
-
-                if (poetry.get(counter + 1).equals("[package.extras]")) {
-                    counter = counter + 2;
-                    // reading package extras
-                    // considering only right part of "=" sign.
-                    while (!poetry.get(counter).isEmpty()) {
-                        // TwoStrings newPackLine = new TwoStrings(poetry.get(counter));
-                        Map.Entry<String, String> newPackLine = mySplit(poetry.get(counter));
-                        String lineValue = newPackLine.getValue();
-                        // removing "[]" from line:
-                        lineValue = myTrim(lineValue, '[', ']');
-                        // Splitting string
-                        String[] lineValueSplited = lineValue.split(", ");
-                        // removing versions, etc. Only first word remains. :
-                        for (int i = 0; i < lineValueSplited.length; i++) {
-                            if (lineValueSplited[i].contains(" ")) {
-                                lineValueSplited[i] = lineValueSplited[i].substring(1,
-                                        lineValueSplited[i].indexOf(" "));
-                            } else {
-                                lineValueSplited[i] = lineValueSplited[i].substring(1,
-                                        lineValueSplited[i].length() - 1);
-                            }
-                            newPackage.addDependency(lineValueSplited[i]);
-                        }
-
-                        counter++;
-
-                    }
-
-                }
-
-                installedPackages.addPackage(newPackage.getName(), newPackage);
-
-                // System.out.println(newPackage);
-
-                // System.out.println(packName+ packVersion+ packDescription+ packCategory+
-                // packOptional+ packPythonVersions);
-                // packagePool.addPackage(new Package(packName, packVersion, packDescription,
-                // packCategory, packOptional, packPythonVersions));
-            }
-            counter++; // next package
-
         }
     }
 
