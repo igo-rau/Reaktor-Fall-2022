@@ -23,6 +23,7 @@ public class Reaktor {
             PoetryParser poetryParser = new PoetryParser(fileScanner, installedPackages);
             poetryParser.run();
             System.out.println("Parsing complete!");
+            fileScanner.close();
         } catch (Exception e) {
             System.out.println("Error opening file: " + e.getMessage());
         }

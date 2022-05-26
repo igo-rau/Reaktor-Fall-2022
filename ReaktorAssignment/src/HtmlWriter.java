@@ -13,77 +13,88 @@ public class HtmlWriter {
     }
 
     public void run() throws IOException {
-        myWriter.write(
-                "<html>\n<head>\n<style>\nhtml {scroll-behavior: smooth !important;}\n</style>\n</head>\n<body style=background-color:beige>\n");
-        myWriter.write(
-                "<h1>Reaktor developer's <a href=\"https://www.reaktor.com/assignment-fall-2022-developers/\">assignment</a> - fall 2022</h1>\n");
-        myWriter.write("Developed by: Igor Rautiainen <br>\n");
-        myWriter.write("Generated: " + new Timestamp(new Date().getTime()) + "<br>\n");
-        myWriter.write("<hr>");
-    
-        // Div with index
-        myWriter.write("<div id=\"top\">");
-        myWriter.write("<h2>Installed packages</h2><br>\n");
+        writeHeaderDiv();
+        writeIndexDiv();
         for (String packName : installedPackages.getKeySet()) {
-            myWriter.write(wrapWithAHref(packName) + ", ");
+            writePackageDiv(packName);
         }
-        //TODO: Fullstop instead of comma at the end.
-    
-        myWriter.write("<br>\n<hr>\n</div>\n");
-    
-        // Div for each package
-        for (String packName : installedPackages.getKeySet()) {
-            myWriter.write("<div id=\"" + packName + "\">");
-            myWriter.write("<h3 style=display:inline>" + packName + "</h3>" + " (to the "
-                    + "<a href=\"#top\">TOP</a>" + ")<br>\n");
-            myWriter.write(installedPackages.getPack(packName).getDescription() + "<br>\n");
-    
-            String myOutput;
-    
-            // Dependencies
-            myOutput = "";
-            myWriter.write("<h3>Dependencies</h3>\n");
-            for (String dependency : installedPackages.getPack(packName).getDependencies()) {
-                if (installedPackages.containsPack(dependency)) {
-                    myOutput = myOutput + wrapWithAHref(dependency)+", ";
-                } else {
-                    myOutput = myOutput + dependency + ", ";                        
-                }
-            }
-            if (myOutput.isEmpty()) {
-                myOutput = "No dependencies";
-            } else {
-                myOutput = myOutput.substring(0, myOutput.length() - 2) + ".";
-            }
-            myWriter.write(myOutput);
-    
-    
-            // Reversed Dependencies
-            myOutput = "";
-            myWriter.write("<h3>Reversed dependencies</h3>\n");
-            for (String dependency : installedPackages.getPack(packName).getReversedDependencies()) {
-                if (installedPackages.containsPack(dependency)) {
-                    myOutput = myOutput + wrapWithAHref(dependency) + ", ";
-                } else {
-                    myOutput = myOutput + dependency + ", ";                        
-                }
-            }                
-            if (myOutput.isEmpty()) {
-                myOutput = "No reversed dependencies";
-            } else {
-                myOutput = myOutput.substring(0, myOutput.length() - 2) + ".";
-            }
-            myWriter.write(myOutput);
-            myWriter.write("<br>\n<hr>\n</div>\n");
-    
-        }
-    
-        // end of file.
+        writeEOF();
+    }
+
+    private void writeEOF() throws IOException {
         myWriter.write("</body></html>");
+    }
+
+    private void writePackageDiv(String packName) throws IOException {
+        StringBuilder myOutput = writePackageDivHeader(packName);
+        writePackageDivDependencies(packName, myOutput);
+        writePackageDivReversedDependecies(packName, myOutput);
+        writeEndOfPackageDiv(myOutput);
+        myWriter.write(myOutput.toString());
+    }
+
+    private void writeEndOfPackageDiv(StringBuilder myOutput) {
+        myOutput.append("<br>\n<hr>\n</div>\n");
+    }
+
+    private void writePackageDivReversedDependecies(String packName, StringBuilder myOutput) {
+        myOutput.append("<h3>Reversed dependencies</h3>\n");
+        boolean notFirst = false;
+        for (String dependency : installedPackages.getPack(packName).getReversedDependencies()) {
+            myOutput.append(notFirst ? ", " : "")
+                    .append((installedPackages.containsPack(dependency)) ? wrapWithAHref(dependency) : dependency);
+            notFirst = true;
+        }
+        myOutput.append(
+                installedPackages.getPack(packName).getReversedDependencies().isEmpty() ? "No reversed dependencies!"
+                        : ".");
+
+    }
+
+    private void writePackageDivDependencies(String packName, StringBuilder myOutput) {
+        myOutput.append("<h3>Dependencies</h3>\n");
+        boolean notFirst = false;
+        for (String dependency : installedPackages.getPack(packName).getDependencies()) {
+            myOutput.append(notFirst ? ", " : "")
+                    .append((installedPackages.containsPack(dependency)) ? wrapWithAHref(dependency) : dependency);
+            notFirst = true;
+        }
+        myOutput.append(
+                installedPackages.getPack(packName).getDependencies().isEmpty() ? "No dependencies!" : ".");
+    }
+
+    private StringBuilder writePackageDivHeader(String packName) {
+        StringBuilder myOutput = new StringBuilder();
+        myOutput.append("<div id=\"" + packName + "\">").append("<h3 style=display:inline>").append(packName)
+                .append("</h3> (to the ").append(wrapWithAHref("top")).append(")<br>\n");
+        myOutput.append(installedPackages.getPack(packName).getDescription()).append("<br>\n");
+        return myOutput;
+    }
+
+    private void writeIndexDiv() throws IOException {
+        StringBuilder myOutput = new StringBuilder("<div id=\"top\"><h2>Installed packages</h2><br>\n");
+        boolean notFirst = false;
+        for (String packName : installedPackages.getKeySet()) {
+            myOutput.append(notFirst ? ", " : "");
+            notFirst = true;
+            myOutput.append(wrapWithAHref(packName));
+        }
+        myOutput.append(".<br>\n<hr>\n</div>\n");
+        myWriter.write(myOutput.toString());
+    }
+
+    private void writeHeaderDiv() throws IOException {
+        StringBuilder myOutput = new StringBuilder(
+                "<html>\n<head>\n<style>\nhtml {scroll-behavior: smooth !important;}\n</style>\n</head>\n<body style=background-color:beige>\n<div>");
+        myOutput.append(
+                "<h1>Reaktor developer's <a href=\"https://www.reaktor.com/assignment-fall-2022-developers/\">assignment</a> - fall 2022</h1>\n");
+        myOutput.append("Developed by: Igor Rautiainen <br>\n");
+        myOutput.append("Generated: " + new Timestamp(new Date().getTime()) + "<br>\n<hr></div>");
+        myWriter.write(myOutput.toString());
     }
 
     private String wrapWithAHref(String s) {
         return "<a href=\"#" + s + "\">" + s + "</a>";
     }
-    
+
 }
