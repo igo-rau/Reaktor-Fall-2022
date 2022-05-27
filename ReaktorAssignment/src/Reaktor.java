@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class Reaktor {
 
-    private static final String sourceFilename = "poetry.lock";
+    private static String sourceFilename = "poetry.lock";
     private static final String targetFilename = "output.html";
 
     public static void main(String[] args) {
@@ -17,6 +17,13 @@ public class Reaktor {
     }
 
     private static void parseFromPoetry(Packages installedPackages) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Please enter file location.\nEmpty string - parsing default file.");
+        String userInput =sc.nextLine();
+        if (!userInput.isEmpty()) {
+            sourceFilename = userInput;
+        }
+
         System.out.println("Reading from " + sourceFilename + "...");
         try {
             Scanner fileScanner = new Scanner(Paths.get(sourceFilename));
@@ -36,8 +43,8 @@ public class Reaktor {
             FileWriter myFileWriter = new FileWriter(targetFilename);
             HtmlWriter htmlWriter = new HtmlWriter(myFileWriter, installedPackages);
             htmlWriter.run();
+            System.out.println("Successfully wrote to the file " + targetFilename);
             myFileWriter.close();
-            System.out.println("Successfully wrote to the file.");
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();

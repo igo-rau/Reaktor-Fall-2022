@@ -6,7 +6,6 @@ public class Package {
 
     private String name;
     private String description;
-    private boolean isOptional;
     private SortedSet<String> dependencies;
     private SortedSet<String> reversedDependencies;
     
@@ -44,14 +43,6 @@ public class Package {
         this.reversedDependencies.add(dependency);
     }
 
-    public boolean isOptional() {
-        return isOptional;
-    }
-
-    public void setOptional(boolean isOptional) {
-        this.isOptional = isOptional;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -65,7 +56,7 @@ public class Package {
     }
 
     public String toString() {
-        return "Name: " + this.name + "\nDescription: " + this.description + "\nOptional: " + this.isOptional;
+        return "Name: " + this.name + "\nDescription: " + this.description;
     }
 
     public void printFullPackageInfo() {

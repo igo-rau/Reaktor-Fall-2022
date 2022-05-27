@@ -35,7 +35,7 @@ public class PoetryParser {
         }
         // pointing at empty line after package body;
 
-        currentLine = poetryScanner.nextLine();
+        if (poetryScanner.hasNextLine()) currentLine = poetryScanner.nextLine();
 
         if (currentLine.equals("[package.dependencies]")) {
             currentLine = poetryScanner.nextLine();
@@ -45,7 +45,7 @@ public class PoetryParser {
                 parseDependencyLine(newPackage, currentLine);
                 currentLine = poetryScanner.nextLine();
             }
-            currentLine = poetryScanner.nextLine();
+            if (poetryScanner.hasNextLine()) currentLine = poetryScanner.nextLine();
         }
 
         if (currentLine.equals("[package.extras]")) {
@@ -54,7 +54,7 @@ public class PoetryParser {
                 parseExtrasLine(newPackage, currentLine);
                 currentLine = poetryScanner.nextLine();
             }
-            currentLine = poetryScanner.nextLine();
+            if (poetryScanner.hasNextLine()) currentLine = poetryScanner.nextLine();
         }
 
         return currentLine;
@@ -83,9 +83,6 @@ public class PoetryParser {
         }
         if (newPackLine[0].equals("description")) {
             newPackage.setDescription(newPackLine[1]);
-        }
-        if (newPackLine[0].equals("optional")) {
-            newPackage.setOptional(Boolean.valueOf(newPackLine[1]));
         }
     }
 
