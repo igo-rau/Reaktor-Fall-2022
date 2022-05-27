@@ -23,6 +23,7 @@ public class Reaktor {
         if (!userInput.isEmpty()) {
             sourceFilename = userInput;
         }
+        sc.close();
 
         System.out.println("Reading from " + sourceFilename + "...");
         try {
