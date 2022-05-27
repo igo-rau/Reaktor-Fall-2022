@@ -4,8 +4,8 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 public class HtmlWriter {
-    private FileWriter myWriter;
-    private Packages installedPackages;
+    private final FileWriter myWriter;
+    private final Packages installedPackages;
 
     public HtmlWriter(FileWriter myFileWriter, Packages packages) {
         this.myWriter = myFileWriter;
@@ -26,7 +26,8 @@ public class HtmlWriter {
     }
 
     private void writePackageDiv(String packName) throws IOException {
-        StringBuilder myOutput = writePackageDivHeader(packName);
+        StringBuilder myOutput = new StringBuilder();
+        writePackageDivHeader(packName, myOutput);
         writePackageDivDependencies(packName, myOutput);
         writePackageDivReversedDependecies(packName, myOutput);
         writeEndOfPackageDiv(myOutput);
@@ -48,7 +49,6 @@ public class HtmlWriter {
         myOutput.append(
                 installedPackages.getPack(packName).getReversedDependencies().isEmpty() ? "No reversed dependencies!"
                         : ".");
-
     }
 
     private void writePackageDivDependencies(String packName, StringBuilder myOutput) {
@@ -63,12 +63,10 @@ public class HtmlWriter {
                 installedPackages.getPack(packName).getDependencies().isEmpty() ? "No dependencies!" : ".");
     }
 
-    private StringBuilder writePackageDivHeader(String packName) {
-        StringBuilder myOutput = new StringBuilder();
+    private void writePackageDivHeader(String packName, StringBuilder myOutput) {
         myOutput.append("<div id=\"" + packName + "\">").append("<h3 style=display:inline>").append(packName)
                 .append("</h3> (to the ").append(wrapWithAHref("top")).append(")<br>\n");
         myOutput.append(installedPackages.getPack(packName).getDescription()).append("<br>\n");
-        return myOutput;
     }
 
     private void writeIndexDiv() throws IOException {
@@ -89,7 +87,7 @@ public class HtmlWriter {
         myOutput.append(
                 "<h1>Reaktor developer's <a href=\"https://www.reaktor.com/assignment-fall-2022-developers/\">assignment</a> - fall 2022</h1>\n");
         myOutput.append("Developed by: Igor Rautiainen <br>\n");
-        myOutput.append("Generated: " + new Timestamp(new Date().getTime()) + "<br>\n<hr></div>");
+        myOutput.append("Generated: ").append(new Timestamp(new Date().getTime())).append("<br>\n<hr></div>");
         myWriter.write(myOutput.toString());
     }
 

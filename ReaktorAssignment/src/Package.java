@@ -12,8 +12,8 @@ public class Package {
     
 
     public Package() {
-        this.dependencies = new TreeSet<String>();
-        this.reversedDependencies = new TreeSet<String>();
+        this.dependencies = new TreeSet<>();
+        this.reversedDependencies = new TreeSet<>();
     }
 
     public String getName() {

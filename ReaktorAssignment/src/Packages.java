@@ -24,10 +24,7 @@ public class Packages {
     }
 
     public boolean containsPack(String packname) {
-        if (installedPackages.containsKey(packname)) {
-            return true;
-        }
-        return false;
+        return installedPackages.containsKey(packname);
     }
 
     public Set<Map.Entry<String,Package>> getEntrySet() {
